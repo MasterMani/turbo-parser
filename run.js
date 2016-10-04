@@ -15,11 +15,11 @@ var urlsArr = ["http://www.homedepot.com/p/Samsung-Laundry-Pedestal-with-Storage
 "http://www.homedepot.com/p/HDX-FMS-2-Refrigerator-Replacement-Filter-Fits-Samsung-HAF-CINS-2-Pack-107019/204049391"];
 
 var productUrls = fs.readFileSync("randomUrls.txt").toString().split("\n").map(a=>a.trim()),
-    headers = "parsedUrl\ttitle\tsku\tupc\tmpn\tbrand\timageUrl\tminSalePrice\tminListPrice\tavailability\tcategoryTexts\tadditionalAttributes\texternalProductUrl\tcanonicalUrl\turlsToSeeder\tstatusCode\n";
+    headers = "parsedUrl\ttitle\tsku\tupc\tmpn\tbrand\timageUrl\tminSalePrice\tminListPrice\tavailability\tcategoryTexts\tadditionalAttributes\tsmallDescription\tlongDescription\tspecificationText\texternalProductUrl\tcanonicalUrl\turlsToSeeder\tstatusCode\n";
 
 
 // getResults(urlsArr, "test.tsv")
-getResults(productUrls, "result.tsv")
+//getResults(productUrls, "result.tsv")
 
 function getResults(urlsArr, file){
   if(file) fs.writeFileSync(file, headers)
@@ -36,10 +36,10 @@ function getResults(urlsArr, file){
         }
         if(!file) console.log(data)
       }).catch(function(err){
-        var parsedUrl = err.split("|||")[0],
-            result = parsedUrl+"\t\t\t\t\t\t\t\t\t\t\t\t\t\t"+"000"+"\n";
+        // var parsedUrl = err.split("|||")[0],
+        //     result = parsedUrl+"\t\t\t\t\t\t\t\t\t\t\t\t\t\t"+"000"+"\n";
         console.log(err)
-        fs.appendFileSync(file, result)
+        //fs.appendFileSync(file, result)
       })
     }, 3000*i)
   });
@@ -50,30 +50,35 @@ function getFields(jsonData){
   var prod = jsonData.products[0],
       price = jsonData.prices[0],
       title = prod.title,
-      sku = prod.sku,
-      upc = prod.upc,
-      mpn = prod.manufacturerPartNumber,
-      brand = prod.brand,
-      imageUrl = prod.imageUrl,
+      sku = prod.sku || "",
+      upc = prod.upc || "",
+      mpn = prod.manufacturerPartNumber || "",
+      brand = prod.brand || "",
+      imageUrl = prod.imageUrl || "",
       catText = prod.categoryTexts.join().toString(),
       addAttrs = JSON.stringify(prod.additionalAttributes),
       exProdUrl = prod.externalProductUrl,
       canUrl = prod.canonicalUrl,
-      urlsToSeed = jsonData.urlsToSeeder,
+      urlsToSeed = jsonData.urlsToSeeder || "",
       statusCode = jsonData.statusCode,
       sPrice = price.minSalePrice,
       lPrice = price.minListPrice,
-      avail = price.availabilityText || "";
-  return `${title}\t${sku}\t${upc}\t${mpn}\t${brand}\t${imageUrl}\t${sPrice}\t${lPrice}\t${avail}\t${catText}\t${addAttrs}\t${exProdUrl}\t${canUrl}\t${urlsToSeed}\t${statusCode}\n`
+      avail = price.availabilityText || "",
+      shipText = price.shippingText || "",
+      sDesc = prod.smallDescription || "",
+      lDesc = prod.longDescription || "",
+      spec = prod.specificationText || "";
+  return `${title}\t${sku}\t${upc}\t${mpn}\t${brand}\t${imageUrl}\t${sPrice}\t${lPrice}\t${avail}\t${catText}\t${addAttrs}\t${sDesc}\t${lDesc}\t${spec}\t${exProdUrl}\t${canUrl}\t${urlsToSeed}\t${statusCode}\n`
 }
 
 function getParseResult(turboUrl, prodUrl){
   return new Promise(function(resolve, reject){
     var fetchUrl = turboUrl + encodeURIComponent(prodUrl);
     request(fetchUrl, function(err, res, body){
-      console.log(err)
-      if(err) reject("res.request.href" + " ||| " + err)
+      if(err) reject(err)
       resolve(body + "|||" + res.request.href)
     });
   });
 }
+
+module.exports = getResults;
