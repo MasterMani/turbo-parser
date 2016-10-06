@@ -55,7 +55,7 @@ function getFields(jsonData){
       mpn = prod.manufacturerPartNumber || "",
       brand = prod.brand || "",
       imageUrl = prod.imageUrl || "",
-      catText = prod.categoryTexts.join().toString(),
+      catText = (prod.categoryTexts || []).join().toString(),
       addAttrs = JSON.stringify(prod.additionalAttributes),
       exProdUrl = prod.externalProductUrl,
       canUrl = prod.canonicalUrl,
